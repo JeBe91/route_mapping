@@ -22,19 +22,25 @@ export const calculateRouteDistances = (coords: L.LatLngExpression[]): number[] 
     return distances;
 };
 
-// Helper function to generate a random number within a range
+// Utility function to generate a random number within a range
 const getRandomInRange = (min: number, max: number): number => {
     return Math.random() * (max - min) + min;
 };
 
-// Function to generate 100 random POIs near a specific location
-const generateRandomPOIs = (centerLat: number, centerLon: number, numPOIs: number): POI[] => {
+// Modified function to generate around 3000 POIs within Germany's bounding box
+const generateRandomPOIs = (numPOIs: number = 3000): POI[] => {
     const pois: POI[] = [];
 
+    // Define approximate bounds for Germany
+    const minLat = 47.0;
+    const maxLat = 55.0;
+    const minLon = 5.9;
+    const maxLon = 15.0;
+
     for (let i = 0; i < numPOIs; i++) {
-        // Generate a random latitude and longitude within +/- 0.05 degrees (~5 km)
-        const randomLat = getRandomInRange(centerLat - 0.05, centerLat + 0.05);
-        const randomLon = getRandomInRange(centerLon - 0.05, centerLon + 0.05);
+        // Generate a random latitude and longitude within Germany's bounds
+        const randomLat = getRandomInRange(minLat, maxLat);
+        const randomLon = getRandomInRange(minLon, maxLon);
 
         // Create a POI object
         const poi: POI = {
@@ -51,8 +57,13 @@ const generateRandomPOIs = (centerLat: number, centerLon: number, numPOIs: numbe
     return pois;
 };
 
+// Example usage
+const pois = generateRandomPOIs(); // Generates 3000 POIs within Germany
+console.log(pois);
+
+
 // Generate 100 POIs near [48.137154, 11.576124]
-export const randomPOIs = generateRandomPOIs(48.137154, 11.576124, 100);
+export const randomPOIs = generateRandomPOIs();
 
 // export const pois: POI[] = [
 //     { id: 1, name: "Museum", lat: 51.505, lon: -0.09, description: "A great museum." },
