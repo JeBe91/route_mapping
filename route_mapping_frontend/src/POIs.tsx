@@ -1,12 +1,16 @@
 export interface POI {
-    id: number;
-    name: string;
-    lat: number;
-    lon: number;
-    description: string;
-    minDistance?: number; // Store minimum distance to the polyline
-    routePosition?: number; // Distance along the route where closest point is
-
+    id: number;                      // Unique identifier for each POI
+    name: string;                    // Name of the POI
+    lat: number;                     // Latitude of the POI
+    lon: number;                     // Longitude of the POI
+    description: string;             // Description of the POI
+    minDistance?: number;             // Minimum distance to the closest point on the route, in kilometers
+    routePosition?: number;           // Distance along the route to the closest point, in kilometers
+    closestPoint?: {                  // Coordinates of the closest point on the route
+        lat: number;
+        lon: number;
+    };
+    type: string; // "house", "tent", "hotel", etc.
 
 }
 
@@ -49,6 +53,7 @@ const generateRandomPOIs = (numPOIs: number = 3000): POI[] => {
             lat: randomLat,
             lon: randomLon,
             description: `Description for POI ${i + 1}`,
+            type: "hotel"
         };
 
         pois.push(poi);
@@ -59,19 +64,9 @@ const generateRandomPOIs = (numPOIs: number = 3000): POI[] => {
 
 // Example usage
 const pois = generateRandomPOIs(); // Generates 3000 POIs within Germany
-console.log(pois);
-
 
 // Generate 100 POIs near [48.137154, 11.576124]
 export const randomPOIs = generateRandomPOIs();
-
-// export const pois: POI[] = [
-//     { id: 1, name: "Museum", lat: 51.505, lon: -0.09, description: "A great museum." },
-//     { id: 2, name: "Park", lat: 51.51, lon: -0.1, description: "A beautiful park." },
-//     { id: 3, name: "Restaurant", lat: 51.495, lon: -0.08, description: "A famous restaurant." },
-//     // Add more POIs as needed
-// ];
-
 
 // Helper function to calculate distance between two points in kilometers using Haversine formula
 export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
