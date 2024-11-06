@@ -1,6 +1,7 @@
 {
   "name": "route_mapping_frontend",
   "version": "0.1.0",
+  "homepage": "https://jebe91.github.io/route_mapping/",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.13.3",
