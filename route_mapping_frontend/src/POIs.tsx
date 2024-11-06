@@ -53,7 +53,7 @@ const generateRandomPOIs = (numPOIs: number = 3000): POI[] => {
             lat: randomLat,
             lon: randomLon,
             description: `Description for POI ${i + 1}`,
-            type: "hotel"
+            type: i % 2 == 0 ? "house" : "tent"
         };
 
         pois.push(poi);

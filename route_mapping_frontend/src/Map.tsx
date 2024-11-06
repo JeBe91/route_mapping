@@ -1,6 +1,6 @@
 // src/Map.tsx
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Polyline, Marker, Popup, GeoJSON } from 'react-leaflet';
+import { MapContainer, TileLayer, Polyline, Marker, Popup, GeoJSON, useMap } from 'react-leaflet';
 import { POI, randomPOIs } from './POIs';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css';
 import L from 'leaflet';
@@ -14,12 +14,21 @@ import ElevationChart from './ElevationChart';
 import InvertedPOIDistanceChart from './InvertedPOIDistanceChart';
 
 
+// Calculate the bounds using turf.js
+export function calculateBounds(coordinates: number[][]): [[number, number], [number, number]] {
+    const line = turf.lineString(coordinates);
+    const bbox = turf.bbox(line); // [minX, minY, maxX, maxY]
+    return [[bbox[1], bbox[0]], [bbox[3], bbox[2]]]; // [[lat1, lng1], [lat2, lng2]]
+}
+
 interface MapProps {
     file: File | null;
 }
 
+
 type SortColumn = 'name' | 'minDistance' | 'routePosition';
 type SortOrder = 'asc' | 'desc';
+
 
 const Map: React.FC<MapProps> = ({ file }) => {
     const [coordinates, setCoordinates] = useState<L.LatLngExpression[]>([]);
@@ -33,6 +42,32 @@ const Map: React.FC<MapProps> = ({ file }) => {
     const [elevationData, setElevationData] = useState<{ distance: number; elevation: number }[]>([]);
     const [maxRoutePosition, setMaxRoutePosition] = useState<number>(0); // Example default max value
     const [routePositionRange, setRoutePositionRange] = useState<number[]>([0, maxRoutePosition]); // Default range for route position
+    const [bounds, setBounds] = useState<any>(undefined); // Default range for route position
+    const [position, setPosition] = useState<[number, number]>([48.137154, 11.576124]); // Default range for route position
+
+
+    function FlyMapTo() {
+
+        const map = useMap()
+
+        useEffect(() => {
+            if (position) {
+                map.setView(
+                    position,
+                    13
+                );
+            }
+        }, [position])
+
+        // useEffect(() => {
+        //     if (bounds) {
+        //         map.fitBounds(bounds)
+        //     }
+        // }, [bounds])
+
+        return null
+    }
+
 
     const parseGPXFile = (gpxData: string): { coordinates: L.LatLngExpression[]; elevationData: { distance: number; elevation: number }[] } => {
         const parser = new DOMParser();
@@ -53,17 +88,28 @@ const Map: React.FC<MapProps> = ({ file }) => {
 
         // Create a polyline for the entire route and calculate total length in kilometers
         const line = turf.lineString(coords.map(coord => [coord.lon, coord.lat]));
-        const totalDistance = turf.length(line, { units: "kilometers" });
 
-        // Calculate cumulative distance at each point using lineSliceAlong
-        coords.forEach((coord, index) => {
-            let distance = index;
-            // if (index > 0) {
-            //     const lineToCurrentPoint = turf.lineSliceAlong(line, 0, totalDistance * (index / (coords.length - 1)), { units: 'kilometers' });
-            //     distance = turf.length(lineToCurrentPoint, { units: "kilometers" });
-            // }
-            elevationData.push({ distance, elevation: coord.ele });
-        });
+
+        // Calculate the bounds using turf.js
+        let bbox = turf.bbox(line)
+        let gpx_bounds = [[bbox[1], bbox[0]], [bbox[3], bbox[2]]];
+        setBounds(gpx_bounds)
+
+        let totalDistance = 0;
+        elevationData = [{ distance: 0, elevation: coords[0].ele }]; // Start with the first coordinate's elevation
+
+        for (let i = 1; i < coords.length; i++) {
+            // Calculate distance between consecutive coordinates only once
+            const point1 = turf.point([coords[i - 1].lon, coords[i - 1].lat]);
+            const point2 = turf.point([coords[i].lon, coords[i].lat]);
+            const segmentDistance = turf.distance(point1, point2, { units: "kilometers" });
+
+            // Accumulate total distance
+            totalDistance += segmentDistance;
+
+            // Store distance and elevation
+            elevationData.push({ distance: totalDistance, elevation: coords[i].ele });
+        }
 
         return { coordinates, elevationData };
     };
@@ -120,14 +166,15 @@ const Map: React.FC<MapProps> = ({ file }) => {
                     );
 
                     // Calculate minDistance and closest point on the route for each POI
-                    const enrichedPOIs = ptsWithin.features.map(pts => {
+                    const enrichedPOIs = ptsWithin.features.map((pts, index) => {
                         const poi = {
-                            id: pts.id as number,
+                            id: index,
                             name: "POI",
                             lat: pts.geometry.coordinates[1] as number,
                             lon: pts.geometry.coordinates[0] as number,
                             description: "Description",
-                            type: pts.type
+                            type: index % 2 == 0 ? "house" : "hotel"
+
                         };
 
                         // Calculate closest point on the route to POI
@@ -193,10 +240,11 @@ const Map: React.FC<MapProps> = ({ file }) => {
     return (
         <>
             <MapContainer
-                center={[48.137154, 11.576124]}
+                center={position}
                 zoom={13}
                 style={{ height: '500px', width: '100%' }}
             >
+                <FlyMapTo />
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution="&copy; OpenStreetMap contributors"
@@ -259,9 +307,11 @@ const Map: React.FC<MapProps> = ({ file }) => {
                 </MarkerClusterGroup>
             </MapContainer >
 
+
             {/* Elevation Chart */}
             <ElevationChart elevationData={elevationData} maxRoutePosition={maxRoutePosition} />
-            <InvertedPOIDistanceChart nearbyPOIs={nearbyPOIs} maxRoutePosition={maxRoutePosition} />
+            <InvertedPOIDistanceChart nearbyPOIs={nearbyPOIs} maxRoutePosition={maxRoutePosition} setPosition={setPosition}  // Pass setPosition to the chart
+            />
 
             {/* Show All Checkbox */}
             <div style={{ margin: '20px' }}>

@@ -6,15 +6,14 @@ import { POI } from './POIs';
 interface InvertedPOIDistanceChartProps {
     nearbyPOIs: POI[];
     maxRoutePosition: number;
+    setPosition: (position: [number, number]) => void;  // Add setPosition prop
 }
 
-const InvertedPOIDistanceChart: React.FC<InvertedPOIDistanceChartProps> = ({ nearbyPOIs, maxRoutePosition }) => {
-    // Map types to specific colors
+const InvertedPOIDistanceChart: React.FC<InvertedPOIDistanceChartProps> = ({ nearbyPOIs, maxRoutePosition, setPosition }) => {
     const typeColors: { [key: string]: string } = {
         house: '#3399ff',
         tent: '#ff7f50',
         hotel: '#66cdaa',
-        // Add more types and colors as needed
     };
 
     const options = {
@@ -49,8 +48,10 @@ const InvertedPOIDistanceChart: React.FC<InvertedPOIDistanceChartProps> = ({ nea
                 data: nearbyPOIs.map(poi => ({
                     value: [poi.routePosition, poi.minDistance],
                     name: poi.name,
+                    latitude: poi.lat,
+                    longitude: poi.lon,
                     itemStyle: {
-                        color: typeColors[poi.type] || '#cccccc' // Default color if type not found
+                        color: typeColors[poi.type] || '#ff7f50'
                     }
                 })),
                 symbolSize: 10,
@@ -64,7 +65,24 @@ const InvertedPOIDistanceChart: React.FC<InvertedPOIDistanceChartProps> = ({ nea
         ]
     };
 
-    return <ReactECharts option={options} style={{ height: '300px', width: '100%' }} />;
+    // Handle click events
+    const onEvents = {
+        click: (params: any) => {
+            const { latitude, longitude } = params.data;
+            if (latitude && longitude) {
+                console.log(latitude, longitude)
+                setPosition([latitude, longitude]);  // Use the lat and lon to update position
+            }
+        }
+    };
+
+    return (
+        <ReactECharts
+            option={options}
+            style={{ height: '300px', width: '100%' }}
+            onEvents={onEvents}  // Attach the click event handler
+        />
+    );
 };
 
 export default InvertedPOIDistanceChart;

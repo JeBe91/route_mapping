@@ -1,3 +1,5 @@
+// src/ResponsiveAppBar.tsx
+
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -10,15 +12,20 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-import { useNavigate } from 'react-router-dom'; // Import the useNavigate hook
+import { useNavigate } from 'react-router-dom';
+import { useFile } from './test';
 
 const pages = ['Cycling', 'Hosting'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
-function ResponsiveAppBar() {
+interface ResponsiveAppBarProps {
+}
+
+const ResponsiveAppBar: React.FC<ResponsiveAppBarProps> = () => {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
-  const navigate = useNavigate(); // Initialize navigate hook
+  const { file, setFile } = useFile();  // Use file context to get and set file
+  const navigate = useNavigate();
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
@@ -35,13 +42,20 @@ function ResponsiveAppBar() {
     setAnchorElUser(null);
   };
 
-  // Handler for page navigation
   const handlePageClick = (page: string) => {
     handleCloseNavMenu();
     if (page === 'Hosting') {
-      navigate('/hosting'); // Navigate to /hosting when Hosting is clicked
+      navigate('/hosting');
     } else if (page === 'Cycling') {
-      navigate('/cycling'); // Navigate to /cycling if needed
+      navigate('/cycling');
+    }
+  };
+
+  // File upload handler
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const gpxFile = event.target.files?.[0] || null;
+    if (gpxFile) {
+      setFile(gpxFile); // Set the uploaded file in context state
     }
   };
 
@@ -53,7 +67,7 @@ function ResponsiveAppBar() {
             variant="h6"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
+            href="#"
             sx={{
               mr: 2,
               display: { xs: 'none', md: 'flex' },
@@ -71,14 +85,31 @@ function ResponsiveAppBar() {
             {pages.map((page) => (
               <Button
                 key={page}
-                onClick={() => handlePageClick(page)} // Use the new navigation handler
+                onClick={() => handlePageClick(page)}
                 sx={{ my: 2, color: 'white', display: 'block' }}
               >
                 {page}
               </Button>
             ))}
           </Box>
-          
+
+          {/* Upload Route button */}
+          <Box sx={{ mr: 2 }}>
+            <Button
+              component="label"
+              variant="contained"
+              color="secondary"
+            >
+              Upload Route
+              <input
+                type="file"
+                accept=".gpx"
+                hidden
+                onChange={handleFileUpload} // Handle file selection
+              />
+            </Button>
+          </Box>
+
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
@@ -103,7 +134,7 @@ function ResponsiveAppBar() {
             >
               {settings.map((setting) => (
                 <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
+                  <Typography textAlign="center">{setting}</Typography>
                 </MenuItem>
               ))}
             </Menu>
@@ -112,5 +143,6 @@ function ResponsiveAppBar() {
       </Container>
     </AppBar>
   );
-}
+};
+
 export default ResponsiveAppBar;
