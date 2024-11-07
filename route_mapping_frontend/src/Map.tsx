@@ -43,30 +43,71 @@ const Map: React.FC<MapProps> = ({ file }) => {
     const [maxRoutePosition, setMaxRoutePosition] = useState<number>(0); // Example default max value
     const [routePositionRange, setRoutePositionRange] = useState<number[]>([0, maxRoutePosition]); // Default range for route position
     const [bounds, setBounds] = useState<any>(undefined); // Default range for route position
-    const [position, setPosition] = useState<[number, number]>([48.137154, 11.576124]); // Default range for route position
+    const [position, setPosition] = useState<[number, number] | undefined>([48.137154, 11.576124]); // Default range for route position
 
 
     function FlyMapTo() {
 
         const map = useMap()
 
+
+
+        useEffect(() => {
+            if (bounds) {
+                console.log("BOUNDS", bounds)
+
+                map.fitBounds(bounds)
+                setBounds(undefined)
+            }
+        }, [bounds])
         useEffect(() => {
             if (position) {
+                console.log("FlyToMapPosition")
                 map.setView(
                     position,
                     13
                 );
+                setPosition(undefined)
+
             }
         }, [position])
+        return null
+    }
+    // // Calculate the bounds using turf.js
+    // function ChangeView(center: any, zoom: number) {
+    //     const map = useMap();
+    //     map.setView(center, zoom);
+    //     return null;
+    // }
+
+    // function ChangeView(center: [number, number], zoom: any) {
+    //     const map = useMap();
+    //     map.setView(center, zoom);
+    //     return null;
+    // }
+    function FlyMapTo2() {
+
+        const map = useMap()
 
         // useEffect(() => {
-        //     if (bounds) {
-        //         map.fitBounds(bounds)
+        //     if (position) {
+        //         map.setView(
+        //             position,
+        //             13
+        //         );
         //     }
-        // }, [bounds])
+        // }, [position])
+
+        useEffect(() => {
+            if (bounds) {
+                console.log("FlyToMapBounds")
+                map.fitBounds(bounds)
+            }
+        }, [bounds])
 
         return null
     }
+
 
 
     const parseGPXFile = (gpxData: string): { coordinates: L.LatLngExpression[]; elevationData: { distance: number; elevation: number }[] } => {
@@ -240,7 +281,7 @@ const Map: React.FC<MapProps> = ({ file }) => {
     return (
         <>
             <MapContainer
-                center={position}
+                center={[14, 14]}
                 zoom={13}
                 style={{ height: '500px', width: '100%' }}
             >

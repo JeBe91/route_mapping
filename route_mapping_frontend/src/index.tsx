@@ -12,6 +12,7 @@ import {
 import HostingPage from './HostingPage';
 import Header from './Header';
 import { FileProvider } from './test';
+import { basename } from 'path';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -19,17 +20,17 @@ const root = ReactDOM.createRoot(
 
 function Layout() {
   return (
-      <>
-        <Header />
-        <Outlet />
-      </>
+    <>
+      <Header />
+      <Outlet />
+    </>
   );
 }
 
 const router = createBrowserRouter([
   {
-    element: <Layout/>,
-    children: [  
+    element: <Layout />,
+    children: [
       {
         path: '/',
         element: <App />
@@ -44,7 +45,7 @@ const router = createBrowserRouter([
       },
     ]
   }
-]);
+], { basename: "route_mapping" });
 
 root.render(
   <React.StrictMode>
