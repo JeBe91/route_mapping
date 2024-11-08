@@ -1,27 +1,25 @@
-// src/ResponsiveAppBar.tsx
-
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import Menu from '@mui/material/Menu';
+import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import Menu from '@mui/material/Menu';
-import { useNavigate } from 'react-router-dom';
+import AdbIcon from '@mui/icons-material/Adb';
+import GestureIcon from '@mui/icons-material/Gesture';
 import { useFile } from './test';
+import { useNavigate } from 'react-router-dom';
 
 const pages = ['Cycling', 'Hosting'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
-interface ResponsiveAppBarProps {
-}
-
-const ResponsiveAppBar: React.FC<ResponsiveAppBarProps> = () => {
+function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const { file, setFile } = useFile();  // Use file context to get and set file
@@ -56,6 +54,7 @@ const ResponsiveAppBar: React.FC<ResponsiveAppBarProps> = () => {
     const gpxFile = event.target.files?.[0] || null;
     if (gpxFile) {
       setFile(gpxFile); // Set the uploaded file in context state
+      handlePageClick('Cycling');
     }
   };
 
@@ -63,11 +62,12 @@ const ResponsiveAppBar: React.FC<ResponsiveAppBarProps> = () => {
     <AppBar position="static">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
+          <GestureIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
           <Typography
             variant="h6"
             noWrap
             component="a"
-            href="#"
+            href="#app-bar-with-responsive-menu"
             sx={{
               mr: 2,
               display: { xs: 'none', md: 'flex' },
@@ -78,9 +78,75 @@ const ResponsiveAppBar: React.FC<ResponsiveAppBarProps> = () => {
               textDecoration: 'none',
             }}
           >
-            LOGO
+            TRAILMATES
           </Typography>
-          
+
+          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+            <IconButton
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleOpenNavMenu}
+              color="inherit"
+            >
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorElNav}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+              open={Boolean(anchorElNav)}
+              onClose={handleCloseNavMenu}
+              sx={{ display: { xs: 'block', md: 'none' } }}
+            >
+              {pages.map((page) => (
+                <MenuItem key={page} onClick={() => handlePageClick(page)}>
+                  <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
+                </MenuItem>
+              ))}
+              <MenuItem key="upload-route">
+                <label style={{ width: '100%', textAlign: 'center' }}>
+                  <Typography sx={{ textAlign: 'center', cursor: 'pointer' }}>
+                    Upload Route
+                  </Typography>
+                  <input
+                    type="file"
+                    accept=".gpx"
+                    hidden
+                    onChange={handleFileUpload} // Handle file selection
+                  />
+                </label>
+              </MenuItem>
+            </Menu>
+          </Box>
+          <GestureIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
+          <Typography
+            variant="h5"
+            noWrap
+            component="a"
+            href="#app-bar-with-responsive-menu"
+            sx={{
+              mr: 2,
+              display: { xs: 'flex', md: 'none' },
+              flexGrow: 1,
+              fontFamily: 'monospace',
+              fontWeight: 700,
+              letterSpacing: '.3rem',
+              color: 'inherit',
+              textDecoration: 'none',
+            }}
+          >
+            TRAILMATES
+          </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
               <Button
@@ -91,16 +157,21 @@ const ResponsiveAppBar: React.FC<ResponsiveAppBarProps> = () => {
                 {page}
               </Button>
             ))}
-          </Box>
-
-          {/* Upload Route button */}
-          <Box sx={{ mr: 2 }}>
+            {/* Upload Button */}
             <Button
               component="label"
-              variant="contained"
-              color="secondary"
+              variant="outlined"
+              sx={{
+                my: 2,
+                ml: 2,
+                color: 'white',
+                borderColor: 'white',
+                '&:hover': {
+                  borderColor: '#FFD700', // Optional hover effect
+                },
+              }}
             >
-              Upload Route
+              Upload
               <input
                 type="file"
                 accept=".gpx"
@@ -109,7 +180,6 @@ const ResponsiveAppBar: React.FC<ResponsiveAppBarProps> = () => {
               />
             </Button>
           </Box>
-
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
@@ -134,7 +204,7 @@ const ResponsiveAppBar: React.FC<ResponsiveAppBarProps> = () => {
             >
               {settings.map((setting) => (
                 <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography textAlign="center">{setting}</Typography>
+                  <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
                 </MenuItem>
               ))}
             </Menu>
@@ -143,6 +213,6 @@ const ResponsiveAppBar: React.FC<ResponsiveAppBarProps> = () => {
       </Container>
     </AppBar>
   );
-};
+}
 
 export default ResponsiveAppBar;
